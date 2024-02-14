@@ -1,0 +1,327 @@
+<canvas id="ctx" width="1000" height="500" style="border:1px solid #000000;"></canvas>
+
+<html>
+<button id="pauseButton" style="background-color: #4CAF50; /* Green */
+                 border: 2px solid #4CAF50; /* Green border */
+                 color: white;
+                 padding: 10px 20px;
+                 text-align: center;
+                 text-decoration: none;
+                 display: inline-block;
+                 font-size: 16px;
+                 margin: 4px 2px;
+                 cursor: pointer;
+                 border-radius: 5px; /* Rounded corners */
+                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Drop shadow */
+                 transition: background-color 0.3s, border-color 0.3s, transform 0.3s; /* Smooth transition effects */
+              "
+          onmouseover="this.style.backgroundColor='#45a049'; this.style.borderColor='#45a049'; this.style.transform='scale(1.05)';"
+          onmouseout="this.style.backgroundColor='#4CAF50'; this.style.borderColor='#4CAF50'; this.style.transform='scale(1)';">Pause</button>
+<button id="resumeButton" style="background-color: #3498db; /* Blue */
+                 border: 2px solid #3498db; /* Blue border */
+                 color: white;
+                 padding: 10px 20px;
+                 text-align: center;
+                 text-decoration: none;
+                 display: inline-block;
+                 font-size: 16px;
+                 margin: 4px 2px;
+                 cursor: pointer;
+                 border-radius: 5px; /* Rounded corners */
+                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Drop shadow */
+                 transition: background-color 0.3s, border-color 0.3s, transform 0.3s; /* Smooth transition effects */
+              "
+          onmouseover="this.style.backgroundColor='#2980b9'; this.style.borderColor='#2980b9'; this.style.transform='scale(1.05)';"
+          onmouseout="this.style.backgroundColor='#3498db'; this.style.borderColor='#3498db'; this.style.transform='scale(1)';"
+  >Resume</button>
+<button id="resetButton" style="background-color: #3498db; /* Blue */
+                                    border: 2px solid #3498db; /* Blue border */
+                                    color: white;
+                                    padding: 10px 20px;
+                                    text-align: center;
+                                    text-decoration: none;
+                                    display: inline-block;
+                                    font-size: 16px;
+                                    margin: 4px 2px;
+                                    cursor: pointer;
+                                    border-radius: 5px; /* Rounded corners */
+                                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Drop shadow */
+                                    transition: background-color 0.3s, border-color 0.3s, transform 0.3s; /* Smooth transition effects */
+                                  ">Reset</button>
+<p id="timerDisplayID"></p>
+<script>
+	var ctx = document.getElementById("ctx").getContext("2d");
+	ctx.font = '30px Arial';
+	var WIDTH = 1000;
+	var HEIGHT = 500;
+	var isPaused = false;
+	const pauseButton = document.getElementById('pauseButton');
+	const resumeButton = document.getElementById('resumeButton');
+	var timer = 0;
+	var snd = new Audio("niggaditangkap.mpeg");
+	var cancelGame = false;
+	var timerSurvived = 0;
+	var intervalID;
+	
+	var player = {
+		x: 200,
+		y: 150,
+		spdX: 20,
+		spdY: -25,
+		fontSize: 15,
+		name: "Police",
+	};
+	
+	var enemyList = {};
+	
+	Enemy = function(x,y, spdX, spdY, fontSize, id) {
+		var enemy = {
+			x: x,
+			y: y,
+			spdX: spdX,
+			spdY: spdY,
+			fontSize: fontSize,
+			id: id,
+			name: "Nigga",
+		};
+		enemyList[id] = enemy;
+	};
+	
+	randomGenEnemy = function() {
+		var x = Math.random() * WIDTH;
+		var y = Math.random() * HEIGHT;
+		var spdX = Math.random() * 15;
+		var spdY = Math.random() * 15;
+		var fontSize = 10 + Math.random * 80;
+		var id = Math.random();
+		
+		Enemy(x, y, spdX, spdY, fontSize, id);
+	}
+	
+	randomGenEnemy();
+	randomGenEnemy();
+	randomGenEnemy();
+	randomGenEnemy();
+	randomGenEnemy();
+	randomGenEnemy();
+	
+	function updateTimer() {
+		timer++; // Increment timer value by 1 (assuming the interval is in milliseconds)
+		// Update the timer display (replace 'timerDisplayID' with the ID of the HTML element to display the timer)
+		document.getElementById('timerDisplayID').textContent = 'Time: ' + timer + ' seconds';
+	}
+	
+	// Function to start the timer
+	function startTimer() {
+		// Clear any existing interval to prevent multiple intervals running simultaneously
+		clearInterval(intervalID);
+		// Start a new interval to update the timer every second (1000 milliseconds)
+		intervalID = setInterval(updateTimer, 1000);
+	}
+	
+	// Function to stop the timer
+	function stopTimer() {
+		clearInterval(intervalID); // Clear the interval to stop updating the timer
+	}
+	
+	startTimer();
+	
+	testCollision = function(obj1, obj2) {
+		var dx = obj1.x - obj2.x;
+		var dy = obj1.y - obj2.y;
+		var distance = Math.sqrt(dx * dx + dy * dy);
+		
+		// Adjust collision radius based on font size
+		var playerRadius = 15 + (obj1.fontSize - 30) / 2; // Assuming default font size is 30px
+		var enemyRadius = 15; // Assuming default font size for enemies
+			
+		return distance <= (playerRadius + enemyRadius);
+	}
+	
+	pauseGame = function() {
+		isPaused = true;
+		stopTimer();
+	
+	}
+	
+	resumeGame = function() {
+		isPaused = false;
+		startTimer();
+	
+	}
+	
+	resetGame = function() {
+		enemyList = {};
+		timer = 0;
+		timerSurvived = 0;
+		startTimer();
+		player.fontSize = 15;
+		isPaused = false;
+		cancelGame = false;
+		randomGenEnemy();
+		randomGenEnemy();
+		randomGenEnemy();
+		randomGenEnemy();
+		randomGenEnemy();
+		randomGenEnemy();
+		randomGenEnemy();
+	}
+	
+	pauseButton.addEventListener('click',pauseGame);
+	resumeButton.addEventListener('click',resumeGame);
+	resetButton.addEventListener('click', resetGame);
+	
+	document.onkeydown = function(event) {
+		if (event.keyCode === 68) {
+			player.pressingRight = true;
+		}
+		else if (event.keyCode === 83) {
+			player.pressingDown = true;
+		}
+		else if (event.keyCode === 65) {
+			player.pressingLeft = true;
+		}
+		else if (event.keyCode === 87) {
+			player.pressingUp = true;
+		}
+	
+	}
+	
+	document.onkeyup = function(event) {
+		if (event.keyCode === 68) {
+			player.pressingRight = false;
+		}
+		else if (event.keyCode === 83) {
+			player.pressingDown = false;
+		}
+		else if (event.keyCode === 65) {
+			player.pressingLeft = false;
+		}
+		else if (event.keyCode === 87) {
+			player.pressingUp = false;
+		}
+	
+	}
+	
+	updatePlayerPosition = function() {
+		if(player.pressingRight) {
+			player.x += 10;
+		}
+		if(player.pressingLeft) {
+			player.x -= 10;
+		}
+		if (player.pressingDown) {
+			player.y += 10;
+		}
+		if (player.pressingUp) {
+			player.y -= 10;
+		}
+		
+		if (player.x < player.width/2)
+			player.x = player.width/2;
+		if (player.x > WIDTH - player.width/2)
+			player.x = WIDTH - player.width/2;
+		if (player.y < player.height/2)
+			player.y = player.height/2;
+		if (player.y > HEIGHT - player.height/2)
+			player.y = HEIGHT - player.height/2;
+	}
+	
+	updPosition = function(something) {
+		something.x += something.spdX;
+		something.y += something.spdY;
+		
+		
+		if (something.x > WIDTH || something.x < 0) {
+			something.spdX = -something.spdX;
+			
+		}
+		
+		if (something.y > HEIGHT || something.y < 0) {
+			something.spdY = -something.spdY;
+		}
+		
+	}
+	
+	function renderPlayer() {
+		// Save current font before changing it
+		var previousFont = ctx.font;
+		// Set custom font size for player
+		ctx.font = player.fontSize + 'px Arial';
+		// Render player text
+		ctx.fillText(player.name, player.x, player.y);
+		// Restore previous font
+		ctx.font = previousFont;
+	}
+
+	// Function to render enemy texts
+	function renderEnemies() {
+		for (var key in enemyList) {
+			var enemy = enemyList[key];
+			// Render enemy text
+			ctx.fillText(enemy.name, enemy.x, enemy.y);
+		}
+	}
+	
+	update = function() {
+		
+		
+		if (!isPaused) {
+			ctx.clearRect(0, 0, WIDTH, HEIGHT);
+			updatePlayerPosition(player);
+			timer++;
+			
+			// Prevent player from going out of bounds
+			if (player.x < 0) {
+				player.x = 0; // Set player's x position to the left boundary
+			} else if (player.x > WIDTH) {
+				player.x = WIDTH; // Set player's x position to the right boundary
+			}
+			
+			if (player.y < 0) {
+				player.y = 0; // Set player's y position to the top boundary
+			} else if (player.y > HEIGHT) {
+				player.y = HEIGHT; // Set player's y position to the bottom boundary
+			}
+			
+			if(timer % 125 === 0 && timer < 500 ) {
+				randomGenEnemy();
+				randomGenEnemy();
+				randomGenEnemy();
+			}
+			
+			if (!cancelGame) {
+					if (timer > 500 && Object.keys(enemyList).length === 0) {
+						if (confirm("Perghh dah menang dak ni, tekan OK utk reset, cancel je kalau tknak")) {
+							resetGame();
+						}
+						else {
+							console.log("oraitt");
+							stopTimer();
+							cancelGame = true;
+						}
+					}
+			}
+			
+			// collide untuk enemy dgn player
+			for (var key in enemyList) {
+				updPosition(enemyList[key]);
+				var isCollide = testCollision(player,enemyList[key]);
+				if (isCollide) {
+					snd.play();
+					delete enemyList[key];
+					player.fontSize += 5;
+				}
+			}
+			
+			renderPlayer();
+			renderEnemies();
+			
+		}
+		
+		
+	}
+	
+	setInterval(update, 40);
+</script>
+</html>
